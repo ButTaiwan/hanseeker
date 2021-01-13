@@ -45,7 +45,7 @@
 	* 中央研究院「漢字構形資料庫」  - GPL3授權 (https://cdp.sinica.edu.tw/cdphanzi/)
 	* 漢字データベース「字形ＩＤＳデータ」  - GPL授權 (http://kanji-database.sourceforge.net/ids/ids.html)
 * 字型檔部分
-	* 萃取自 WFG 的全明體。其字型主要收錄自全字庫宋體等。適用政府資料開放授權條款－第1版。
+	* 萃取自 WFG 的全宋體。其字型主要收錄自全字庫宋體等。適用政府資料開放授權條款－第1版。
 
 ## 備註
 此版本是為了「字嗨！」網站的Unicode文字檢索功能而改寫的。
