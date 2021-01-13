@@ -1,0 +1,234 @@
+﻿<!DOCTYPE html>
+<head><title>部件檢索</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"></head>
+<body>
+
+<!-- 客製化修改區起始 -->
+<style>
+a { text-decoration:none }
+a:link, a:visited {color:#1257F9 }
+a:hover, button:hover, span.btn:hover {color:#c20c24 }
+
+@font-face{
+    font-family: PUAExt;
+	src: url(PUAExt-Regular.woff2) format("woff2"), url(PUAExt-Regular.woff) format("woff"), url(PUAExt-Regular.ttf) format("truetype");
+}
+.han { font-family: PUAExt, MingLiU, MingLiU-ExtB, FMing-m,FMing-1,FMing-2,FMing-3,FMing-F,FSung-m,FSung-1,FSung-2,FSung-3,FSung-F;}
+
+#sk_header #sk_logo { float: left; width: 160px; text-align: center; cursor: default; }
+#sk_header #sk_logo h1 { margin: 0px; font-size: 1.8em; color: #082955 }
+#sk_header #sk_logo h3 { margin: 0; font-weight: bold; font-size: 1em; font-family: Arial, Helvetica, sans-serif; }
+#sk_header #sk_logo #datasize { color: #a13887 }
+#sk_header #sk_toolbar { padding: 5px 0 } 
+#sk_header #sk_toolbar .grp { display: inline-block; white-space: nowrap; margin: 3px } 
+#sk_header button { cursor: pointer; font-size: 12pt; font-weight: bold; ; line-height: 1.2; min-width: 35px }
+#sk_header #input { font-size: 1.2em }
+#scKey { margin-left: 10px }
+#scKey button { color: #00f; font-weight: normal; padding: 2px }
+
+#keyboard { padding: 10px 20px; border-top: 2px solid #ccc; border-bottom: 2px solid #ccc; clear: both; }
+#keyboard #padbtn { font-size: 1.5em; background: #ccc; cursor: pointer; padding: 2px }
+#keyboard table { width: 100%; border-collapse: collapse;}
+#keyboard table th, #keyboard table td { margin: 1px 0px; padding: 2px 4px; border-top: 1px solid #fff; border-right: 1px solid #fff }
+#keyboard table th { background-color: #ccc; font-weight: normal; white-space: nowrap; }
+#keyboard table.strokeKB th { width: 4em }
+#keyboard table td { background-color: #eee; vertical-align: top }
+#keyboard table td .sub { white-space: nowrap;}
+#keyboard table td .sub .tag { font-size: 85%; vertical-align: middle; margin-left: 5px }
+#keyboard button { width: 17pt; height: 17pt; font-size: 12pt; color: #00f; background: #ddd; border-width: 1px; border-color: #fff #777 #777 #fff ; padding: 1px 2px; margin: 0; cursor: pointer; vertical-align: bottom; }
+#keyboard button:hover { background: #ffc }
+
+#result { padding: 10px 20px }
+#result { padding: 10px 12px }
+#result #legend { line-height:180%; vertical-align: bottom; padding-bottom: 10px }
+/*#result #legend .sizebtn { display: inline-block; width: 24px; height: 24px; line-height: 1; font-size: 25px; text-align: center; background: #ccc; cursor: pointer; vertical-align: bottom; }*/
+#result #legend .zone { display: inline-block; white-space: nowrap; margin-right: 6px; float: left }
+#result #legend button { width: 24px; height: 24px; padding: 2px; border: 1px solid #bbb; cursor: pointer; color: transparent; margin-right: 4px; vertical-align: top; line-height: 1 }
+#result #legend #counter { font-weight: bold; color: #00f; white-space: nowrap }
+#result #legend #counter:after { content: '　'}
+
+#result #output { min-height: 100px; font-size:1.5em; line-height: 1; padding: 10px 0 }
+#result #output a { border: 1px solid #aaa; color: #333 !important; padding: 1px; margin: 2px; width: 1em; display: block; float: left; background-repeat: no-repeat; background-size: 25px 25px; }
+#result #output a.img { background-repeat: no-repeat; background-size: 25px 25px; color: transparent !important }
+#result #output span { margin: 3px 0; padding: 4px 8px; display: block; }
+
+#sk_foot { clear: both; font-size: 0.85em; text-align: right; padding-top: 20px; height: 100px }
+#sk_foot > span { padding: 3px 10px; white-space: nowrap }
+
+.K1 { color: #0000aa !important }
+.K2 { color: #004d26 !important }
+.K3 { color: #752796 !important }
+.K4 { color: #ac3333 !important }
+.BSC {background:#eee;}
+.ExA {background:#C0E8FF;}
+.ExB {background:#FFF8D0;}
+.ExC {background:#D1BADA;}
+.ExD {background:#80FFB0;}
+.ExE {background:#FFC0D0;}
+.ExF {background:#90E0D0;}
+.ExG {background:#CBD0FF;}
+.CMP {background:#aaa;}
+.SUP {background:#FCC800;}
+.OTH {background:#9e8f8f;}
+/*.decmp { color:#0045FF !important }
+.fuzzy { color:#404040 !important }*/
+.exact { outline: 1px solid #c43400; border-color: #c43400 !important }
+
+#popview { position: absolute; display: none; width: 100px; min-height: 125px; padding-left: 100px; border: 1px solid #666; background: rgba(255, 255, 255, 0.9); box-shadow: 2px 2px #aaa; z-index: 10 }
+#popview #bigchar { position: absolute; display: block; left: 0; top: 0; width: 100px; height: 100px; font-size: 80px; text-align: center; line-height: 100px; cursor: default }
+#popview #bigchar.img { color: transparent; background-repeat: no-repeat; background-size: 100px 100px; }
+#popview #codetag { position: absolute; display: block; left: 0; top: 100px; width: 100px; font-size: 15px; color: #074a67; text-align: center; font-family:Arial, Helvetica, sans-serif; cursor: default }
+#popview .func { display: block; cursor: pointer; padding: 2px 5px; color: #333 }
+#popview .func:hover { background :#ff5b84; color: #fff }
+
+@media screen and (max-width: 800px) { 
+	.els { display: none }
+	#sk_header #sk_logo { width: 150px; }
+	#sk_header #input { width: 140px }
+	#sk_header #sk_toolbar #scKey { display: none }
+	#keyboard table.strokeKB th { width: 2.2em }
+	#keyboard table td .sub { white-space: normal ;} 
+	#result #legend .zone { width: 28px; overflow: hidden; margin-right: 2px; color: #000 } 
+	#result #legend button { color: #000 }
+}
+</style>
+
+<!-- UI 畫面區 -->
+<div id="sk_header">
+	<div id="sk_logo">
+		<h1>部件檢索</h1>
+		<h3><span id="datasize"></span>字</h3>
+	</div>
+	<div id="sk_toolbar">
+		<span class="grp">部件：
+			<input id="input" class="han" oninput="UI.go()" />
+		</span>
+		<span class="grp">
+			<button title="清除" onclick="UI.clearFind()"><b>X</b></button>
+			<button title="倒退" onclick="UI.backspace()">◃</button>
+			<button title="解構" onclick="UI.decompose()"><b>\</b></button>
+			<button title="獨體" onclick="UI.clearFind();UI.key('#')"><b>#</b></button>
+			<button title="查詢" onclick="UI.go(true)">▶</button>
+		</span>
+		<span id="scKey" class="grp">⌘</span>
+		<br>
+		<span class="grp">選項：
+			<label><input type="checkbox" id="variant" onclick="UI.setMode(this, 'variant')">包容異體</label>
+			<label><input type="checkbox" id="onthefly" onclick="UI.setMode(this, 'onthefly')">即時查詢</label>
+			<label><input type="checkbox" id="subdivide" onclick="UI.setMode(this, 'subdivide')">無理拆分</label>
+		</span>
+	</div>
+</div>
+
+<div id="keyboard">
+	<span id="padbtn" class="btn" onclick="UI.updatePad()">⌨</span>
+	<span id="filters">
+		<label class="K1"><input type="radio" name="filter" value="1" onclick="UI.updateFilter()"><span class="els">214</span>部首</label>
+		<label class="K2"><input type="radio" name="filter" value="2" onclick="UI.updateFilter()"><span class="els">部首</span>變體</label>
+		<label class="K3"><input type="radio" name="filter" value="3" onclick="UI.updateFilter()">難輸<span class="els">部件</span></label>
+		<label class="K4"><input type="radio" name="filter" value="4" onclick="UI.updateFilter()">常用<span class="els">部件</span></label>
+		<label><input type="radio" name="filter" value="0" onclick="UI.updateFilter()">所有部件</label>
+	</span>
+	<div id="keypad"></div>
+</div>
+
+<div id="result">
+	<div id="legend">
+		<!--<span class="sizebtn btn" onclick="UI.updatePad()">＋</span>
+		<span class="sizebtn btn" onclick="UI.updatePad()">－</span>　　　-->
+		<span class="zone"><button class="BSC" onclick="UI.key('@')">基</button>基本</span>
+		<span class="zone"><button class="ExA" onclick="UI.key('A')">A</button>A區</span>
+		<span class="zone"><button class="ExB" onclick="UI.key('B')">B</button>B區</span>
+		<span class="zone"><button class="ExC" onclick="UI.key('C')">C</button>C區</span>
+		<span class="zone"><button class="ExD" onclick="UI.key('D')">D</button>D區</span>
+		<span class="zone"><button class="ExE" onclick="UI.key('E')">E</button>E區</span>
+		<span class="zone"><button class="ExF" onclick="UI.key('F')">F</button>F區</span>
+		<span class="zone"><button class="ExG" onclick="UI.key('G')">G</button>G區</span>
+		<span class="zone"><button class="CMP" onclick="UI.key('X')">容</button>相容</span>
+		<span class="zone"><button class="SUP" onclick="UI.key('Y')">私</button>補充</span>
+		<span class="zone"><button class="OTH" onclick="UI.key('Z')">它</button>其它</span>
+		<span id="counter"></span>
+	</div>
+	<div id="output" class="han"></div>
+</div>
+<div id="popview">
+	<span id="bigchar" class="han"></span>
+	<span id="codetag"></span>
+	<span id="menu_key" class="func">輸入</span>
+	<a id="menu_go" class="func" target="_blank">前往頁面</a>
+	<span id="menu_query" class="func">替換查詢</span>
+	<span id="menu_copy" class="func">複製此文字</span>
+	<span class="els">
+		<span id="menu_add" class="func">加入快捷列</span>
+		<span id="menu_del" class="func">移出快捷列</span>
+	</span>
+</div>
+
+<!-- UI 程式區 -->
+<script>
+// Global 變數
+var Config = {
+	// $CHR$ 表示未經編碼的漢字變數
+	// $ENC$ 表示經URI編碼的漢字變數
+	// $UCD$ 表示漢字的10進制Unicode變數
+	// $UCh$ 表示漢字的16進制小寫Unicode變數
+	// $UCH$ 表示漢字的16進制大寫Unicode變數
+	url: 'https://www.unicode.org/cgi-bin/GetUnihanData.pl?codepoint=$ENC$',
+
+	// GlyphWiki網站的圖片網址
+	glyphwiki: 'https://glyphwiki.org/glyph/',
+
+	// 指定哪個Range要採用圖片顯示 (true=圖片顯示，false=文字顯示)
+	useImage: {1: false, 2: false, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true, 27: false, 28: true, 29: true, 30: false, 31: false},
+	resultStep1: 99,
+	resultStep2: 999,
+
+	// 產生結果方塊
+	// w : Unicode字元
+	// c : Unicode碼
+	// m : 命中狀態 0=精確命中 >0=模糊命中 <0=漢字解構
+	// a : 執行動作
+	// t : 顯示文字
+	// 回傳空字串表示捨棄此字
+	addCell: function(w, c, m, a, t) {
+		var f = (m < 0) ? 'decmp' : (m ? 'fuzzy' : 'exact');
+		var k = Seeker.getCJKBlock(c);
+		var b = UI.blockClasses[k] || 'OTH';
+		if (t) {
+			return '<span class="'+ f +' '+ b +'">' + t + '</span>';
+		} else if (Config.useImage[k]) {
+			return '<a class="'+ f +' '+ b +' img" target="_blank" '+ a +' style="background-image: url(' + Config.glyphwiki + 'u' + c.toString(16) + '.svg)">' + w + '</a>';
+		} else {
+			return '<a class="'+ f +' '+ b +'" target="_blank" '+ a +'>' + w + '</a>';
+		}
+	},
+
+	setResult: function(a, i, m) {
+		_('counter').innerHTML = (a.length > m) ? ('<span style="color:red">超過 ' + m + ' 字</span>') :
+							(i >= dt.length ? '總共 ' + a.length + ' 字' : '目前 ' + a.length + ' 字... ' + Math.floor(i*100 / dt.length) + '%');
+		var s = '';
+		for (var j in a) s += (a.length >= m || i >= dt.length ? a[j] : a[j].replace(/ img|style="[^"]+"/g, '')) + ' ';							
+		_('output').innerHTML = s;
+	}
+}
+
+
+</script>
+
+<!-- 客製化修改區結束 -->
+
+<div id="sk_foot">
+<span>改版版本：<span id="version"></span></span>
+<span>改版發布網址：<a href="https://github.com/ButTaiwan/hanseeker" target="_blank">GitHub</a></span>
+<span>原始核心版本：<span id="version">0.9.1.0</span></span>
+<span>原始發布網址：<a href="http://fgwang.blogspot.tw/2015/12/blog-post_30.html" target="_blank">部件檢索</a> (WFG製作)</span>
+<span>漢字拆分資料：<a href="http://fgwang.blogspot.tw/2015/12/blog-post_30.html" target="_blank">WFG</a>、<a href="https://cdp.sinica.edu.tw/cdphanzi/" target="_blank">漢字構形資料庫</a>、<a href="http://kanji-database.sourceforge.net/ids/ids.html" target="_blank">字形IDSデータ</a></span>
+</div>
+
+
+<!-- 核心程式區 -->
+<!--HERE-->
+<!--##--><script type="text/javascript" src="data_org.js" encoding="utf-8"></script>
+<!--##--><!--script type="text/javascript" src="data_simp.js" encoding="utf-8"></script-->
+<!--##--><script type="text/javascript" src="corecode.js" encoding="utf-8"></script>
+
+</body></html>
