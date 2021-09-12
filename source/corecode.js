@@ -665,8 +665,8 @@ UI.showPop = function(e) {
 	if (c.tagName.toUpperCase() != 'BUTTON' && c.tagName.toUpperCase() != 'A') return;
 	var change = function() {
 		var maxX = document.body.scrollWidth - 70;
-		var x = e.pageX < 150 ? 10 : Math.floor(e.pageX < maxX ? e.pageX - 140 : maxX - 140);
-		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(e.pageY+5) +'px';
+		var x = e.layerX < 150 ? 10 : Math.floor(e.layerX < maxX ? e.layerX - 140 : maxX - 140);
+		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(e.layerY+5) +'px';
 		//console.log(_('popview').style);
 		_('bigchar').innerText = c.innerText;
 		var u = c.innerText.codePointAt(0);
