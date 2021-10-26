@@ -5,7 +5,7 @@ var $_ = _('input');
 
 //////////////////////////////////////// Configurations ////////////////////////////////////////
 
-Seeker.getVersion = function() {return "0.9.3.0   (2021年01月)";};
+Seeker.getVersion = function() {return "1.0.0.0   (2021年10月)";};
 Seeker.blockFlagMap = {'#': 0x0001, 'A': 0x0002, 'B': 0x0004, 'C': 0x0008, 'D': 0x0010, 'E': 0x0020, 'F': 0x0040, 'G': 0x0080, 'X': 0x2000, 'Y': 0x4000, 'Z': 0x8000};
 Seeker.blockMap = {1: 0x0001, 2: 0x0002, 3: 0x0004, 4: 0x0008, 5: 0x0010, 6: 0x0020, 7: 0x0040, 8: 0x0080, 28: 0x2000, 29: 0x2000, 30: 0x4000};
 //Seeker.blockMap = {1: 0x0001, 2: 0x0002, 3: 0x0004, 4: 0x0008, 5: 0x0010, 6: 0x0020, 7: 0x0040, 8: 0x0080, 27: 0x2000, 28: 0x2000, 29: 0x2000, 30: 0x4000, 31: 0x4000};
@@ -192,7 +192,7 @@ Seeker.getData = function(c) {
 };
 
 // 檢索遞迴運算
-Seeker.eliminate = function(query, str, ignore, divide, variant) { 
+Seeker.eliminate = function(query, str, groups, ignore, divide, variant) { 
 	// query: 搜尋字串的陣列(已排序)
 	// str: 正要媒合的樹枝
 	// divide: 硬拆
@@ -200,11 +200,12 @@ Seeker.eliminate = function(query, str, ignore, divide, variant) {
 	var f = query.length == 1 && query[0] == "#";	// 獨體字模式	to be deleted
 	if (str == "@") { 							// 如果此字已無法再分解
 		if (f) query.length = 0;				// 清空陣列 (=命中獨體字)
-		return 1;
+		return null;
 	}
 	var n = 0;									// n: 命中狀態  0=精確命中 >0=模糊命中 <0=漢字解構
-	var k = 0; 									// k: 
+	//var k = 0; 									// k: 
 	var backup = query.concat();				// b: 備份搜尋陣列a
+	var res = false;
 	//console.log(' -> ' + query);	
 	for (var i = 0; i < str.length; i++) { 		// 針對拆分序列中的每個字
 		var w = str.charPointAt(i);
@@ -215,7 +216,8 @@ Seeker.eliminate = function(query, str, ignore, divide, variant) {
 
 		if (w == "!" && !divide) { 				// 若此字是無理拆分且非無理拆分模式
 			if (f) query.length = 0; 			// 清空陣列 (=命中獨體字)
-			return 1; 
+			break;
+			//return false; 
 		}
 
 		if (w == "@" || w == "!") { 			// 某種拆分方式的起始
@@ -225,24 +227,35 @@ Seeker.eliminate = function(query, str, ignore, divide, variant) {
 				query.length = 0;				// 從備份重建搜尋陣列
 				for (var j = 0; j < backup.length; j++) query.push(backup[j]);
 				n = 0;
+				//res = false;
 			//} 
 			//k++;
 		} else { 
 			if (!f && query.length) { 			// 非獨體字模式 搜尋陣列還有值
+				//var cres = false;
 				var c = w.codePointAt(0);
 
 				var pos = query.indexOf(Seeker.variant(w, variant)); 	// 在搜尋陣列中尋找這個字的位置
 				if (pos < 0) {											// 找不到的話，把拆分字串再拆開遞迴一層
-					n += Seeker.getData(c) ? Seeker.eliminate(query, Seeker.getData(c), ignore, divide, variant) : 1;
+					if (Seeker.getData(c)) {
+						if (Seeker.eliminate(query, Seeker.getData(c), groups, ignore, divide, variant)) {
+							groups.push(w);
+							res |= true;
+						}
+					// } else {
+					// 	n += 1;
+					}
 				} else {
 					query.splice(pos, 1);		// 找到了：從搜尋陣列刪除這個字
+					res |= true;
 				}
-			} else { 							// 拆分字串裡還有剩餘的文字 (非精準拆分)
-				n++;
-			} 
+			// } else { 							// 拆分字串裡還有剩餘的文字 (非精準拆分)
+			// 	n++;
+			}
 		}
 	} 
-	return n;
+	return res;
+//	return n;
 };
 
 Seeker.stopMatch = function() {
@@ -281,8 +294,9 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showCell, sh
 			}
 			
 			var n = 0; 								// 命中狀態
+			var groups = [];
 			if (Seeker.variant(w, variant) != s) { 
-				n = Seeker.eliminate(query, dt[i].slice(w.length), ignore, divide, variant); 
+				n = Seeker.eliminate(query, dt[i].slice(w.length), groups, ignore, divide, variant); 
 				if (query.length) continue; 		// 沒命中
 			} 
 		
@@ -293,7 +307,8 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showCell, sh
 			url = url.replace("$UCh$", c.toString(16)); 
 			url = url.replace("$UCH$", c.toString(16).toUpperCase()); 
 		
-			var cell = showCell(w, c, n, url); 
+			var cell = showCell(w, c, n, url);
+			console.log(groups);
 			if (cell && (!n || found.length <= max)) found.push(cell); 
 			if (found.length >= max+1) break;		// 新增超過m+1時break掉，雖然可能因此喪失精確命中結果，但可以明顯加速運算
 		}
@@ -661,8 +676,11 @@ UI.showPop = function(e) {
 	if (c.tagName.toUpperCase() != 'BUTTON' && c.tagName.toUpperCase() != 'A') return;
 	var change = function() {
 		var maxX = document.body.scrollWidth - 70;
-		var x = e.layerX < 150 ? 10 : Math.floor(e.layerX < maxX ? e.layerX - 140 : maxX - 140);
-		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(e.layerY+5) +'px';
+		//console.log(e);
+		//var x = e.pageX < 150 ? 10 : Math.floor(e.pageX < maxX ? e.pageX - 140 : maxX - 140);
+		var rect = c.getBoundingClientRect();
+		var x = rect.left < 150 ? 10 : Math.floor(rect.left < maxX ? rect.left - 140 : maxX - 140);
+		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(rect.bottom+5) +'px';
 		//console.log(_('popview').style);
 		_('bigchar').innerText = c.innerText;
 		var u = c.innerText.codePointAt(0);
@@ -701,6 +719,7 @@ UI.eventMoniter = function() {
 	$_.addEventListener('keydown', function(e) {
 		if (e.code == 'Enter' || e.keyCode == 13) UI.go(true);
 		if (e.code == 'Escape' || e.keyCode == 27) UI.clearFind();
+		if (e.code == 'Backslash' || e.keyCode == 0x5C) console.log(e.code);
 	});
 
 	_('popview').addEventListener('mouseenter', function(e) {

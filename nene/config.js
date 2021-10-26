@@ -28,9 +28,9 @@ var Config = {
 		if (t) {
 			return '<span class="'+ f +' '+ b +'">' + t + '</span>';
 		} else if (Config.useImage[k]) {
-			return '<a class="'+ f +' '+ b +' img" target="_blank" '+ a +' style="background-image: url(' + Config.glyphwiki + 'u' + c.toString(16) + '.svg)">' + w + '</a> ';
+			return '<a class="'+ f +' '+ b +' img" target="_blank" '+ a +' style="background-image: url(' + Config.glyphwiki + 'u' + c.toString(16) + '.svg)">' + w + '</a>';
 		} else {
-			return '<a class="'+ f +' '+ b +'" target="_blank" '+ a +'>' + w + '</a> ';
+			return '<a class="'+ f +' '+ b +'" target="_blank" '+ a +'>' + w + '</a>';
 		}
 	},
 
@@ -38,7 +38,7 @@ var Config = {
 		_('counter').innerHTML = (a.length > m) ? ('<span style="color:red">超過 ' + m + ' 字</span>') :
 							(i >= dt.length ? '總共 ' + a.length + ' 字' : '目前 ' + a.length + ' 字... ' + Math.floor(i*100 / dt.length) + '%');
 		var s = '';
-		for (var j in a) s += (a.length >= m || i >= dt.length ? a[j] : a[j].replace(/ img|style="[^"]+"/g, '')) + ' ';							
+		for (var j in a) s += (a.length >= m || i >= dt.length ? a[j] : a[j].replace(/ img|style="[^"]+"/g, '')); // + ' ';							
 		_('output').innerHTML = s;
 	}
 }
