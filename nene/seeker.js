@@ -1,5 +1,5 @@
-var Seeker = {dataIndex: null, seg: 1000, interval: 50, totalmsec: 0, segcnt: 0, worker: null};
-var UI = {shortcuts: [], padType: null};
+var Seeker = {dataIndex: null, seg: 1000, interval: 50, totalmsec: 0, segcnt: 0, worker: null, result: null};
+var UI = {shortcuts: [], padType: null, groups: null};
 var _ = function(id) { return document.getElementById(id); }
 var $_ = _('input');
 
@@ -226,7 +226,7 @@ Seeker.eliminate = function(query, str, groups, ignore, divide, variant) {
 				if (!query.length) break;
 				query.length = 0;				// 從備份重建搜尋陣列
 				for (var j = 0; j < backup.length; j++) query.push(backup[j]);
-				n = 0;
+				//n = 0;
 				//res = false;
 			//} 
 			//k++;
@@ -239,7 +239,7 @@ Seeker.eliminate = function(query, str, groups, ignore, divide, variant) {
 				if (pos < 0) {											// 找不到的話，把拆分字串再拆開遞迴一層
 					if (Seeker.getData(c)) {
 						if (Seeker.eliminate(query, Seeker.getData(c), groups, ignore, divide, variant)) {
-							groups.push(w);
+							groups.unshift(w);
 							res |= true;
 						}
 					// } else {
@@ -247,9 +247,10 @@ Seeker.eliminate = function(query, str, groups, ignore, divide, variant) {
 					}
 				} else {
 					query.splice(pos, 1);		// 找到了：從搜尋陣列刪除這個字
+					//groups.unshift(w);
 					res |= true;
 				}
-			// } else { 							// 拆分字串裡還有剩餘的文字 (非精準拆分)
+			// } else { 						// 拆分字串裡還有剩餘的文字 (非精準拆分)
 			// 	n++;
 			}
 		}
@@ -263,7 +264,7 @@ Seeker.stopMatch = function() {
 };
 
 // setTimeout 分割版本
-Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showCell, showRes) {
+Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showRes, onFinished) {
 	// string, variant?, divide?, max, href
 	clearTimeout(Seeker.worker);
 
@@ -275,14 +276,12 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showCell, sh
 	var found = [];
 	//for (var ii = 1; ii < dt.length; ii++) { 
 	var work = function(j) {
-		if (found.length >= max+1) return;
-		//console.log(s, j);
+		//if (found.length >= max+1) return;
 		if (j+Seeker.seg < dt.length) Seeker.worker = setTimeout(function() { work(j+Seeker.seg); }, Seeker.segcnt > 10 ? Math.floor(Seeker.totalmsec/Seeker.segcnt+5) : Seeker.interval);
 		//console.log(Seeker.segcnt > 10 ? Seeker.totalmsec/Seeker.segcnt+5 : Seeker.interval);
 		var st = new Date();
 		var t = 0; 
 		for (var i = j; i < j + Seeker.seg && i < dt.length; i++) { 
-				//var i = (ii < dt.length - 48) ? (ii + 48) : (ii - dt.length + 49);
 			var query = x.concat();				// 複製陣列 (因為eliminate函式內會直接操作，故用concat的副作用進行複製)
 			var w = dt[i].charPointAt(0);		// 目前測試的字
 			var c = w.codePointAt(0);			//            的unicode
@@ -293,77 +292,37 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showCell, sh
 				if (!(blockFlag & f)) continue; 
 			}
 			
-			var n = 0; 								// 命中狀態
+			//var n = 0; 								// 命中狀態
 			var groups = [];
 			if (Seeker.variant(w, variant) != s) { 
-				n = Seeker.eliminate(query, dt[i].slice(w.length), groups, ignore, divide, variant); 
+				Seeker.eliminate(query, dt[i].slice(w.length), groups, ignore, divide, variant); 
 				if (query.length) continue; 		// 沒命中
+				groups.unshift(w);
 			} 
 		
 			var url = urlSrc;
-			url = url.replace("$CHR$", w); 
-			url = url.replace("$ENC$", encodeURI(w)); 
-			url = url.replace("$UCD$", c.toString()); 
-			url = url.replace("$UCh$", c.toString(16)); 
-			url = url.replace("$UCH$", c.toString(16).toUpperCase()); 
+			url = url.replace("$CHR$", w);
+			url = url.replace("$ENC$", encodeURI(w));
+			url = url.replace("$UCD$", c.toString());
+			url = url.replace("$UCh$", c.toString(16));
+			url = url.replace("$UCH$", c.toString(16).toUpperCase());
 		
-			var cell = showCell(w, c, n, url);
-			console.log(groups);
-			if (cell && (!n || found.length <= max)) found.push(cell); 
-			if (found.length >= max+1) break;		// 新增超過m+1時break掉，雖然可能因此喪失精確命中結果，但可以明顯加速運算
+			var hitData = {'char': w, 'unicode': c, 'groups': groups, 'order': found.length};
+			if (found.length <= max) found.push(hitData); 
+			if (found.length >= max+1) {
+				clearTimeout(Seeker.worker);
+				onFinished(found);
+				break;		// 新增超過m+1時break掉，雖然可能因此喪失精確命中結果，但可以明顯加速運算
+			}
 		}
 		showRes(found, i, max);
 		Seeker.totalmsec += new Date()-st;
 		Seeker.segcnt++;
+
+		if (j+Seeker.seg >= dt.length) onFinished(found);
 	};
 	Seeker.worker = setTimeout(function() { work(0); }, 10);
-	//} 
-	//return a; 
-}; 
-
-// Seeker.getMatch = function(s, v, d, m, h, z) {
-// 	// string, varient?, divide?, max, href
-// 	var x = [];
-// 	var blockFlag = Seeker.arraylize(s, v, x);
-// 	x.sort(); 
-// 	s = x.join(''); 
-// 	var bak = $_.value;
-// 	var a = []; 
-// 	for (var ii = 1; ii < dt.length; ii++) { 
-// 		if (bak != $_.value) {
-// 			console.log('interupted at ' + ii);
-// 			break;
-// 		}
-
-// 		var i = (ii < dt.length - 48) ? (ii + 48) : (ii - dt.length + 49);
-// 		var y = x.concat();					// 複製陣列 (因為eliminate函式內會直接操作，故用concat的副作用進行複製)
-// 		var w = dt[i].charPointAt(0);		// 目前測試的字
-// 		var c = w.codePointAt(0);
-		
-// 		if (blockFlag) {		// 篩選要包含的Unicode分區
-// 			var f = Seeker.blockMap[Seeker.getCJKBlock(c)] || 0x8000;
-// 			if (!(blockFlag & f)) continue; 
-// 		}
-		
-// 		var n = 0; 							// 命中狀態
-// 		if (Seeker.variant(w, v) != s) { 
-// 			//console.log('> ' + w);
-// 			n = Seeker.eliminate(y, dt[i].slice(w.length), d, v); 
-// 			if (y.length) continue; 		// 沒命中
-// 		} 
- 
-// 		h = h.replace("$CHR$", w); 
-// 		h = h.replace("$ENC$", encodeURI(w)); 
-// 		h = h.replace("$UCD$", c.toString()); 
-// 		h = h.replace("$UCh$", c.toString(16)); 
-// 		h = h.replace("$UCH$", c.toString(16).toUpperCase()); 
-
-// 		var p = z(w, c, n, h); 
-// 		if (p && (!n || (a.length <= m))) a.push(p); 
-// 		if (a.length >= m+1) break;		// 新增超過m+1時break掉，雖然可能因此喪失精確命中結果，但可以明顯加速運算
-// 	} 
-// 	return a; 
-// }; 
+};
 
 // 拆分
 Seeker.exhaust = function(s, divide, recursive) { 
@@ -393,20 +352,21 @@ Seeker.exhaust = function(s, divide, recursive) {
 }; 
 
 // 解構模式 (:)
-Seeker.getTree = function(s, d, z) {
+Seeker.getTree = function(str, divide, setCell) {
 	var a = []; 
-	if (s.length) {
-		var w = s.charPointAt(0); 
+	if (str.length) {
+		var w = str.charPointAt(0); 
 		var c = w.codePointAt(0); 
 		var m = 0; 
 		var n = -1; 
-		var p = Seeker.exhaust(w, d, true);
-		console.log(p);
+		var p = Seeker.exhaust(w, divide, true);
+		//console.log(p);
 		
 		do {
 			n = p.indexOf("‖", m); 
 			var t = p.slice(m, (n < 0 ? p.length : n));
-			t = z(w, c, -1, '', t.length ? t : "(不再分解)"); 
+			//t = setCell(w, c, '', t.length ? t : "(無法再分解)"); 
+			t = {'char': w, 'unicode': c, 'text': t.length ? t : "(無法再分解)"};
 			if (t) a.push(t); m = n + 1;
 		} while (n >= 0);
 	}
@@ -539,6 +499,7 @@ UI.clearFind = function() {
 };
 
 // 倒退清除
+/*
 UI.backspace = function() {
 	var n = UI.getPos();
 	if (n > 0) {
@@ -549,7 +510,7 @@ UI.backspace = function() {
 		UI.setPos(m);
 		UI.go();
 	}
-};
+};*/
 
 // 拆漢字
 UI.decompose = function() {
@@ -558,12 +519,16 @@ UI.decompose = function() {
 		var s = $_.value;
 		var m = n-1;
 		var w = s.charPointAt(m);
+		if (w == '\\') {
+			m--;
+			w = s.charPointAt(m);
+		}
 		if (w.length > 1) m--;
 
 		var d = _('subdivide').checked;
 		var t = Seeker.exhaust(w, d, false);
 		if (t.length) {
-			$_.value = s.slice(0, m) + t + s.slice(n);
+			$_.value = s.slice(0, m) + t + s.slice(n).replace(/\\/g, '');
 			UI.setPos(m+t.length);
 			UI.go();
 		}
@@ -576,12 +541,15 @@ UI.go = function(force) {
 	$_.focus();
 	//if (!force && !_('onthefly').checked) return;
 	UI.hidePop(true);
+	UI.groups = null;
+	Seeker.result = null;
 	var s = UI.getSel() || $_.value;
 	s = s.replace(/\s/g, '');
+	$('#groups').text('Loading...');
 	if (!s) {
 		Seeker.stopMatch();
-		_('counter').innerHTML = '';
-		_('output').innerHTML = '';
+		$('#counter').text('');
+		$('#output').text('');
 	} else {
 		var divide = _('subdivide').checked;
 		var variant = _('variant').checked;
@@ -595,7 +563,7 @@ UI.go = function(force) {
 
 			var url = 'href="'+ Config.url +'"';
 			var max = force ? Config.resultStep2 : Config.resultStep1;
-			var l = Seeker.getMatch(s, ignore, variant, divide, max, url, Config.addCell, Config.setResult);
+			Seeker.getMatch(s, ignore, variant, divide, max, url, Config.setResult, Config.onFinished);
 		}
 	}
 };
@@ -680,10 +648,11 @@ UI.showPop = function(e) {
 		//var x = e.pageX < 150 ? 10 : Math.floor(e.pageX < maxX ? e.pageX - 140 : maxX - 140);
 		var rect = c.getBoundingClientRect();
 		var x = rect.left < 150 ? 10 : Math.floor(rect.left < maxX ? rect.left - 140 : maxX - 140);
-		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(rect.bottom+5) +'px';
+		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(window.scrollY + rect.bottom+5) +'px';
 		//console.log(_('popview').style);
-		_('bigchar').innerText = c.innerText;
-		var u = c.innerText.codePointAt(0);
+		var chr = $(c).attr('data-char') || c.innerText;
+		_('bigchar').innerText = chr;
+		var u = chr.codePointAt(0);
 		_('codetag').innerText = 'U+' + u.toString(16).toUpperCase();
 		var k = Seeker.getCJKBlock(u);
 		_('bigchar').className = Config.useImage[k] ? 'han img' : 'han';
@@ -715,33 +684,65 @@ UI.hidePop = function(e) {
 	}, 100);
 };
 
+UI.setSkipChar = function(chr) {
+	if ($_.value.indexOf('-') < 0) $_.value += '-';
+	$_.value += chr;
+	UI.go();
+};
+
 UI.eventMoniter = function() {
 	$_.addEventListener('keydown', function(e) {
+		if (e.isComposing) return;
 		if (e.code == 'Enter' || e.keyCode == 13) UI.go(true);
 		if (e.code == 'Escape' || e.keyCode == 27) UI.clearFind();
-		if (e.code == 'Backslash' || e.keyCode == 0x5C) console.log(e.code);
 	});
 
-	_('popview').addEventListener('mouseenter', function(e) {
+	$_.addEventListener('keyup', function(e) {
+		if (e.isComposing) return;
+		if (e.code == 'Backslash' || e.keyCode == 0x5C) UI.decompose();
+	});
+
+	$('#input').on('input', function() { UI.go(false); });
+	$('#buttClear').click(UI.clearFind);
+	$('#buttDecompose').click(UI.decompose);
+	$('#buttGo').click(function() { UI.go(true) });
+
+	$('#popview').on('mouseenter', function(e) {
 		clearTimeout(UI.popTimer);
 		e.stopPropagation();
-	}, false);
+	});
 	
-	_('popview').addEventListener('mouseleave', function(e) {
+	$('#popview').on('mouseleave', function(e) {
 		e.stopPropagation();
-		if (e.target != this) return;
-		_('popview').style.display = 'none';
+		//if (e.target != this) return;
+		$('#popview').hide();
 		UI.popTrigger = null;
-	}, false);
+	});
 
+	// _('popview').addEventListener('mouseenter', function(e) {
+	// 	clearTimeout(UI.popTimer);
+	// 	e.stopPropagation();
+	// }, false);
+	
+	// _('popview').addEventListener('mouseleave', function(e) {
+	// 	e.stopPropagation();
+	// 	if (e.target != this) return;
+	// 	_('popview').style.display = 'none';
+	// 	UI.popTrigger = null;
+	// }, false);
+	
 	_('keypad').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
 	_('keypad').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
 	_('scKey').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
 	_('scKey').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
 	_('output').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
 	_('output').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
+	_('groups').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
+	_('groups').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
 
 	_('output').addEventListener('click', function(e) { if (e.target.tagName == 'A') e.preventDefault() }, false);
+
+	$('#groups').on('click', 'a.grp', function() { $(this).toggleClass('on'); Config.showResult(); });
 
 	_('scKey').addEventListener('click', function(e) {
 		if (e.target.tagName.toUpperCase() == 'BUTTON') UI.key(e.target.innerText);
@@ -757,6 +758,7 @@ UI.eventMoniter = function() {
 	_('menu_key').addEventListener('click', function(e) { UI.key(UI.popTrigger.innerText); }, false);
 	_('menu_copy').addEventListener('click', function(e) { UI.setClipboard(UI.popTrigger.innerText); }, false);
 	_('menu_query').addEventListener('click', function(e) { UI.replaceFind(UI.popTrigger.innerText); }, false);
+	$('#menu_skip').click(function(e) { UI.setSkipChar(UI.popTrigger.innerText); });
 	_('menu_add').addEventListener('click', function(e) { UI.addShortcut(UI.popTrigger.innerText); }, false);
 	_('menu_del').addEventListener('click', function(e) { UI.addShortcut(UI.popTrigger.innerText, true); }, false);
 
@@ -767,16 +769,15 @@ UI.eventMoniter = function() {
 // 初始化
 UI.init = function() {
 	// UI
-	_('version').innerHTML = Seeker.getVersion();
+	$('#version').html(Seeker.getVersion());
 
 	var cnt = 0;
 	for (var i in dt) if (dt[i].substring(dt[i].length-1) != '╳') cnt++;
-	_('datasize').innerText = cnt;
+	$('#datasize').text(cnt);
 
 	// Status
-	_('variant').checked = UI.getCookie('variant', '1') == '1';
-	//_('onthefly').checked = UI.getCookie('onthefly', '1') == '1';
-	_('subdivide').checked = UI.getCookie('subdivide', '0') == '1';
+	$('#variant').prop('checked', UI.getCookie('variant', '1') == '1');
+	$('#subdivide').prop('checked', UI.getCookie('subdivide', '0') == '1');
 	UI.addShortcut();
 
 	// Events

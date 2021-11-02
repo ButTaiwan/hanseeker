@@ -46,10 +46,17 @@ a:hover, button:hover, span.btn:hover {color:#c20c24 }
 #result #legend #counter { font-weight: bold; color: #00f; white-space: nowrap }
 #result #legend #counter:after { content: '　'}
 
-#result #output { min-height: 100px; font-size:1.8em; line-height: 1; padding: 10px 0 }
-#result #output a { border: 1px solid #aaa; color: #333 !important; padding: 1px; margin: 3px; width: 1em; display: inline-block; /*float: left;*/ /*background-repeat: no-repeat; background-size: 25px 25px;*/ overflow: hidden }
-#result #output a.img { background-repeat: no-repeat; background-size: 30px 30px; color: transparent !important }
+#result #groups { min-height: 55px; font-size:1.6em; line-height: 1; padding: 5px; background-color: #eee; }
+#result #groups a { border: 1px solid #aaa; color: #333 !important; border-radius: 3px; background-color: #fff; padding: 1px; margin: 2px; width: 1em; display: inline-block; overflow: hidden }
+#result #groups a.img { background-repeat: no-repeat; background-size: 27px 27px }
+#result #groups a:after { content: attr(data-count); display: block; text-align: center; font: 50%/1.4 Arial, Helvetica, sans-serif; }
+#result #groups a.on { background-color: #eaa }
+
+#result #output { min-height: 100px; font-size:1.6em; line-height: 1; padding: 10px 0 }
+#result #output a { border: 1px solid #aaa; color: #333 !important; padding: 1px; margin: 2px; width: 1em; display: inline-block; border-radius: 2px; overflow: hidden }
+#result #output a.img { background-repeat: no-repeat; background-size: 27px 27px; color: transparent !important }
 #result #output span { margin: 3px 0; padding: 4px 8px; display: block; }
+#result #output h3 { margin: 0; padding: 0 5px; display: inline-block; font-size: 1em; line-height: 1.2; vertical-align: top; user-select: none; }
 
 #sk_foot { clear: both; font-size: 0.85em; text-align: right; padding-top: 20px; height: 100px }
 #sk_foot > span { padding: 3px 10px; white-space: nowrap }
@@ -100,14 +107,13 @@ a:hover, button:hover, span.btn:hover {color:#c20c24 }
 	</div>
 	<div id="sk_toolbar">
 		<span class="grp">部件：
-			<input id="input" class="han" oninput="UI.go()" />
+			<input id="input" class="han" />
 		</span>
 		<span class="grp">
-			<button title="清除" onclick="UI.clearFind()"><b>X</b></button>
-			<button title="倒退" onclick="UI.backspace()">◃</button>
-			<button title="解構" onclick="UI.decompose()"><b>\</b></button>
-			<button title="獨體" onclick="UI.clearFind();UI.key('#')"><b>#</b></button>
-			<button title="查詢" onclick="UI.go()">▶</button>
+			<button title="清除" id="buttClear"><b>X</b></button>
+			<button title="解構" id="buttDecompose"><b>\</b></button>
+			<!--button title="獨體" onclick="UI.clearFind();UI.key('#')"><b>#</b></button-->
+			<button title="查詢" id="buttGo">▶</button>
 		</span>
 		<span id="scKey" class="grp">⌘</span>
 		<br>
@@ -148,6 +154,8 @@ a:hover, button:hover, span.btn:hover {color:#c20c24 }
 		<span class="zone"><button class="OTH" onclick="UI.key('Z')">它</button>其它</span>
 		<span id="counter"></span>
 	</div>
+	<div id="groups" class="han">
+	</div>
 	<div id="output" class="han"></div>
 </div>
 <div id="popview">
@@ -157,6 +165,7 @@ a:hover, button:hover, span.btn:hover {color:#c20c24 }
 	<a id="menu_go" class="func" target="_blank">前往頁面</a>
 	<span id="menu_query" class="func">替換查詢</span>
 	<span id="menu_copy" class="func">複製此文字</span>
+	<span id="menu_skip" class="func">排除此文字</span>
 	<span class="els">
 		<span id="menu_add" class="func">加入快捷列</span>
 		<span id="menu_del" class="func">移出快捷列</span>
