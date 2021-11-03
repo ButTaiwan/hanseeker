@@ -1,11 +1,11 @@
-var Seeker = {dataIndex: null, seg: 1000, interval: 50, totalmsec: 0, segcnt: 0, worker: null, result: null};
-var UI = {shortcuts: [], padType: null, groups: null};
+var Seeker = {dataIndex: null, seg: 1000, interval: 50, totalmsec: 0, segcnt: 0, worker: null, result: null, groups: null};
+var UI = {shortcuts: [], keypadMode: null};
 var _ = function(id) { return document.getElementById(id); }
 var $_ = _('input');
 
 //////////////////////////////////////// Configurations ////////////////////////////////////////
 
-Seeker.getVersion = function() {return "1.0.0.0   (2021年10月)";};
+Seeker.getVersion = function() {return "1.1.0.0   (2021年11月)";};
 Seeker.blockFlagMap = {'#': 0x0001, 'A': 0x0002, 'B': 0x0004, 'C': 0x0008, 'D': 0x0010, 'E': 0x0020, 'F': 0x0040, 'G': 0x0080, 'X': 0x2000, 'Y': 0x4000, 'Z': 0x8000};
 Seeker.blockMap = {1: 0x0001, 2: 0x0002, 3: 0x0004, 4: 0x0008, 5: 0x0010, 6: 0x0020, 7: 0x0040, 8: 0x0080, 28: 0x2000, 29: 0x2000, 30: 0x4000};
 //Seeker.blockMap = {1: 0x0001, 2: 0x0002, 3: 0x0004, 4: 0x0008, 5: 0x0010, 6: 0x0020, 7: 0x0040, 8: 0x0080, 27: 0x2000, 28: 0x2000, 29: 0x2000, 30: 0x4000, 31: 0x4000};
@@ -78,37 +78,7 @@ UI.strokeKeyboard = {
 	}
 };
 
-UI.categoryKeyboard = {
-	vertical: false,
-	className: 'categoryKB',
-	groups: {
-		'筆畫': '一丨丶,㇒丿㇀,㇈亅乚,㇄㇁㇂,𠄌𠃊𠃋,𠃎𠃍󰎀,𡿨乛㇇,㇏乀⺄,𠃌㇆󰋌,㇉𠃑㇊,㇣㐅乂,󰊅󰊸󰕐,𰀪⺀巜',
-		'字頭': '艹⺾艹䒑𥫗,⺈𠆢𠂉󰓶亠,⺌𭕄爫爫,𠂆厂广疒𤕫,厃产󰒖屵严,尸𠃜󰓏耂𠫓,罒㓁罓龷,覀⺜龶⺻,冖⺳宀龸󰒑,𤇾𫇦󰋚󰓐󰒾,癶龹𡗗,⻗𦥯𰃮龻󰓗,𠂒虍󶃛󰒭𦍌',
-		'包圍': '冂⺆,󰒂𠘨,凵𠙴,匚𠥓,匸󰒦,勹𦉶,󰊥󰊶,󰓴󶏔,󰑖󰑹,𢦏󰑷,㦰𦝠,囗',
-		'計數': '甲乙丙丁,戊己庚辛,壬癸,子丑寅卯,辰巳午未,申酉戌亥,一二三四,五六七丷,八九十廿,卄卅卌𠦃,万寸尺丈',
-		'自然': '日月,󰑬,風气,雨夕,金钅,釒,木朩,水氵,氺󰐻,火灬,土石,冫仌',
-		'地理': '山业,丘巛,川𫶧,穴谷,𣶒󰑉,州,皋𠂤,阜⻖,𨸏阝,邑⻏',
-		'動物': '鼠牛牜虎,毚㲋龍巴,虫馬羊⺶,⺸𦍋𦫳犭,犬犮豕𧰨,豸鹿𢊁廌,魚鳥隹嘼,黽黾龜貝,彐彑㣇,角羽毛巤,爪󰒬釆禸,习卂飞飛,隺󰊎',
-		'植物': '艸屮韭,竹禾𥝌,米𠂭麥,麻黍桼,豆瓜𤓰,朿𣎵本,𣎳𣏟支,丰󰐸丯,𢎘,𠧪𠂹丵',
-		'人體': '首頁𦣻𡿺囟,髟丱卝㐱彡,冉冄而口亼,舌牙㸦齒𧮫,𦣞𦣝目耳,鼻自面靣身,心忄⺗血骨,肉⺼⺝󰐧皮,手扌龵𠂇䶹,又⺕󰐷,𦥑廾𠬞𠬜,足𧾷疋𤴔止,龰丮𠃨',
-		'食飲': '食,飠,𩙿,饣,丣,鹵,鬯,甘,香,皀',
-		'衣飾': '衣𧘇,衤冃,巾巿,糸纟,糹黹,革韋,玉⺩,文',
-		'住居': '門,戶,囱,囪,几,囧,瓦,井,爿,丬,田,里',
-		'行旅': '行走,辵辶,⻌⻍,廴夂,𫝀夊,𡕒㐄,彳𣥂,𤴓,舟車,立至,入隶,冘',
-		'書樂': '聿,𦘒,肀,册,𠕁,史,鼓,龠,音',
-		'祭祀': '卜,⺊,爻,兆,示,⺬,礻,𥘅,鬼,甶,亯,用,夬',
-		'器物': '皿甾,缶𦈢,网𦉰,冈𠔿,𦉫𦉪,匕𠁁,斗臼,鬲鼎,丌耒',
-		'軍事': '刀刂,力刄,刃刅,斤弋,矢弓,矛干,戈戉,殳𠘧,卩㔾,攴攵,㫃𭤨,鬥',
-		'人稱': '人亻,𠂊乑,厶我,父母,儿女,𠦑士,王臣,氏民',
-		'生命': '生,老,歹,歺,𣦵,𰀄,𠤎,尢,尣,䇂',
-		'顏色': '青,靑,白,朱,赤,黑,玄,黃,色',
-		'動作': '言讠,訁曰,吅从,㕯工,見艮,欠夨,襾󰒊,𡳾𠂈',
-		'雜類': '上丄下丅長镸,大中小𡭔高𩫖,丆乁幺乡㇋𠄎,丂𠀁龴𠚤󰑲〢,𠔼冋冎㒳㡀㒼,兀无旡兂圥󰩮,方𠮠片𰀁𢆉𦍍,毋毌齊齐叚,㠯比𠃏丩𠂎乇,舛夗非开幵幷,𠂔𪩲巨亞亜戼,東西南北叀𠦒,𢑚𠃬𢏚㢴'
-	}
-};
-
 //////////////////////////////////////// JavaScript Prototypes ////////////////////////////////////////
-
 
 if (!Array.prototype.indexOf) {
 	Array.prototype.indexOf = function (o, f) {
@@ -172,10 +142,8 @@ Seeker.getCJKBlock = function(c) {
 	if (c >= 0x2CEB0 && c <= 0x2EBE0) return 7;
 	if (c >= 0x30000 && c <= 0x3134A) return 8;
 	if (c >= 0xF900  && c <= 0xFAD9 ) return 28;
-	//if (c >= 0xFA70  && c <= 0xFAD9 ) return 28;
 	if (c >= 0x2F800 && c <= 0x2FA1D) return 29;
 	if (c >= 0xF0270 && c <= 0xFAE7A) return 30;
-	//if (c >= 0xF5000 && c <= 0xFAE7A) return 31;
 	return 0;
 };
 
@@ -197,16 +165,10 @@ Seeker.eliminate = function(query, str, groups, ignore, divide, variant) {
 	// str: 正要媒合的樹枝
 	// divide: 硬拆
 	// variant: 包容異體
-	var f = query.length == 1 && query[0] == "#";	// 獨體字模式	to be deleted
-	if (str == "@") { 							// 如果此字已無法再分解
-		if (f) query.length = 0;				// 清空陣列 (=命中獨體字)
-		return null;
-	}
-	var n = 0;									// n: 命中狀態  0=精確命中 >0=模糊命中 <0=漢字解構
-	//var k = 0; 									// k: 
+	if (str == "@") return null;				// 如果此字已無法再分解
+
 	var backup = query.concat();				// b: 備份搜尋陣列a
 	var res = false;
-	//console.log(' -> ' + query);	
 	for (var i = 0; i < str.length; i++) { 		// 針對拆分序列中的每個字
 		var w = str.charPointAt(i);
 		if (w.length > 1) i++;
@@ -214,49 +176,29 @@ Seeker.eliminate = function(query, str, groups, ignore, divide, variant) {
 			continue;
 		}
 
-		if (w == "!" && !divide) { 				// 若此字是無理拆分且非無理拆分模式
-			if (f) query.length = 0; 			// 清空陣列 (=命中獨體字)
-			break;
-			//return false; 
-		}
-
+		if (w == "!" && !divide) break;			// 若此字是無理拆分且非無理拆分模式
 		if (w == "@" || w == "!") { 			// 某種拆分方式的起始
-			//if (k) { 
-			//	if (!query.length || !n) break;
-				if (!query.length) break;
-				query.length = 0;				// 從備份重建搜尋陣列
-				for (var j = 0; j < backup.length; j++) query.push(backup[j]);
-				//n = 0;
-				//res = false;
-			//} 
-			//k++;
-		} else { 
-			if (!f && query.length) { 			// 非獨體字模式 搜尋陣列還有值
-				//var cres = false;
-				var c = w.codePointAt(0);
+			if (!query.length) break;
+			query.length = 0;					// 從備份重建搜尋陣列
+			for (var j = 0; j < backup.length; j++) query.push(backup[j]);
 
-				var pos = query.indexOf(Seeker.variant(w, variant)); 	// 在搜尋陣列中尋找這個字的位置
-				if (pos < 0) {											// 找不到的話，把拆分字串再拆開遞迴一層
-					if (Seeker.getData(c)) {
-						if (Seeker.eliminate(query, Seeker.getData(c), groups, ignore, divide, variant)) {
-							groups.unshift(w);
-							res |= true;
-						}
-					// } else {
-					// 	n += 1;
+		} else if (query.length) { 				// 搜尋陣列還有值
+			var c = w.codePointAt(0);
+			var pos = query.indexOf(Seeker.variant(w, variant)); 	// 在搜尋陣列中尋找這個字的位置
+			if (pos < 0) {											// 找不到的話，把拆分字串再拆開遞迴一層
+				if (Seeker.getData(c)) {
+					if (Seeker.eliminate(query, Seeker.getData(c), groups, ignore, divide, variant)) {
+						groups.unshift(w);
+						res |= true;
 					}
-				} else {
-					query.splice(pos, 1);		// 找到了：從搜尋陣列刪除這個字
-					//groups.unshift(w);
-					res |= true;
 				}
-			// } else { 						// 拆分字串裡還有剩餘的文字 (非精準拆分)
-			// 	n++;
+			} else {
+				query.splice(pos, 1);		// 找到了：從搜尋陣列刪除這個字
+				res |= true;
 			}
 		}
 	} 
 	return res;
-//	return n;
 };
 
 Seeker.stopMatch = function() {
@@ -264,7 +206,7 @@ Seeker.stopMatch = function() {
 };
 
 // setTimeout 分割版本
-Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showRes, onFinished) {
+Seeker.getMatch = function(s, ignore, variant, divide, force, urlSrc) {
 	// string, variant?, divide?, max, href
 	clearTimeout(Seeker.worker);
 
@@ -272,27 +214,26 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showRes, onF
 	var blockFlag = Seeker.arraylize(s, variant, x);
 	x.sort();
 	s = x.join(''); 
+	if (s == '') return;
 
 	var found = [];
-	//for (var ii = 1; ii < dt.length; ii++) { 
 	var work = function(j) {
-		//if (found.length >= max+1) return;
 		if (j+Seeker.seg < dt.length) Seeker.worker = setTimeout(function() { work(j+Seeker.seg); }, Seeker.segcnt > 10 ? Math.floor(Seeker.totalmsec/Seeker.segcnt+5) : Seeker.interval);
-		//console.log(Seeker.segcnt > 10 ? Seeker.totalmsec/Seeker.segcnt+5 : Seeker.interval);
 		var st = new Date();
 		var t = 0; 
 		for (var i = j; i < j + Seeker.seg && i < dt.length; i++) { 
-			var query = x.concat();				// 複製陣列 (因為eliminate函式內會直接操作，故用concat的副作用進行複製)
-			var w = dt[i].charPointAt(0);		// 目前測試的字
-			var c = w.codePointAt(0);			//            的unicode
+			var query = x.concat();					// 複製陣列 (因為eliminate函式內會直接操作，故用concat的副作用進行複製)
+			var w = dt[i].charPointAt(0);			// 目前測試的字
+			var c = w.codePointAt(0);				//            的unicode
+			var block = Seeker.getCJKBlock(c);
 			if (ignore && ignore.indexOf(w) >= 0) continue;
 
-			if (blockFlag) {		// 篩選要包含的Unicode分區
-				var f = Seeker.blockMap[Seeker.getCJKBlock(c)] || 0x8000;
+			if (blockFlag) {						// 篩選要包含的Unicode分區
+				var f = Seeker.blockMap[block] || 0x8000;
 				if (!(blockFlag & f)) continue; 
 			}
 			
-			//var n = 0; 								// 命中狀態
+			//var n = 0; 							// 命中狀態
 			var groups = [];
 			if (Seeker.variant(w, variant) != s) { 
 				Seeker.eliminate(query, dt[i].slice(w.length), groups, ignore, divide, variant); 
@@ -308,18 +249,18 @@ Seeker.getMatch = function(s, ignore, variant, divide, max, urlSrc, showRes, onF
 			url = url.replace("$UCH$", c.toString(16).toUpperCase());
 		
 			var hitData = {'char': w, 'unicode': c, 'groups': groups, 'order': found.length};
-			if (found.length <= max) found.push(hitData); 
-			if (found.length >= max+1) {
+			if (force || block == 1) found.push(hitData); 
+			if (!force && block != 1) {
 				clearTimeout(Seeker.worker);
-				onFinished(found);
+				UI.onFinished(found);
 				break;		// 新增超過m+1時break掉，雖然可能因此喪失精確命中結果，但可以明顯加速運算
 			}
 		}
-		showRes(found, i, max);
+		UI.setResult(found, i, force);
 		Seeker.totalmsec += new Date()-st;
 		Seeker.segcnt++;
 
-		if (j+Seeker.seg >= dt.length) onFinished(found);
+		if (j+Seeker.seg >= dt.length) UI.onFinished(found);
 	};
 	Seeker.worker = setTimeout(function() { work(0); }, 10);
 };
@@ -352,25 +293,24 @@ Seeker.exhaust = function(s, divide, recursive) {
 }; 
 
 // 解構模式 (:)
-Seeker.getTree = function(str, divide, setCell) {
-	var a = []; 
+Seeker.getTree = function(str, divide) {
+	var html = ''; 
 	if (str.length) {
 		var w = str.charPointAt(0); 
 		var c = w.codePointAt(0); 
-		var m = 0; 
-		var n = -1; 
 		var p = Seeker.exhaust(w, divide, true);
-		//console.log(p);
-		
-		do {
-			n = p.indexOf("‖", m); 
-			var t = p.slice(m, (n < 0 ? p.length : n));
-			//t = setCell(w, c, '', t.length ? t : "(無法再分解)"); 
-			t = {'char': w, 'unicode': c, 'text': t.length ? t : "(無法再分解)"};
-			if (t) a.push(t); m = n + 1;
-		} while (n >= 0);
+		p = p.replace(/([\ud800-\udbff][\udc00-\udfff]|[^\ud800-\udfff])\(/g, '<span class="line">$1(<span class="sub">').replace(/\)/g, '</span>)</span>');
+
+		if (p == '') {
+			html += UI.addCell({'char': w, 'unicode': c, 'text': '(無法再分解)'});
+		} else {
+			var strs = p.split('‖');
+			for (var i in strs) {
+				html += UI.addCell({'char': w, 'unicode': c, 'text': strs[i].length ? strs[i] : "(無法再分解)"});
+			}
+		}
 	}
-	return a;
+	return html;
 }
 
 //////////////////////////////////////// User Interface ////////////////////////////////////////
@@ -397,7 +337,7 @@ UI.initKeyboard = function(kbType) {
 				if (w.length > 1) i++;
 				if (w == ',') { html += '<br>'; continue; }
 				var z = Seeker.parts[w];
-				if (z) html += '<button class="han K' + z + '">' + w + '</button>';
+				if (z) html += '<button class="han K' + z + '" data-char="' + w + '">' + w + '</button>';
 			}
 		} else {
 			for (var gg in kbType.groups[g]) {
@@ -407,7 +347,7 @@ UI.initKeyboard = function(kbType) {
 					if (w.length > 1) i++;
 					if (w == ',') { html += '<br>'; continue; }
 					var z = Seeker.parts[w];
-					if (z) html += '<button class="han K' + z + '">' + w + '</button>';
+					if (z) html += '<button class="han K' + z + '" data-char="' + w + '">' + w + '</button>';
 				}
 				html += '</span> ';
 			}
@@ -416,7 +356,7 @@ UI.initKeyboard = function(kbType) {
 		if (kbType.vertical) html += '</tr>';
 	}
 	html += '</table>';
-	_('keypad').innerHTML = html;
+	$('#keypad').html(html);
 };
 
 // 寫入剪貼簿
@@ -498,20 +438,6 @@ UI.clearFind = function() {
 	UI.go(true);
 };
 
-// 倒退清除
-/*
-UI.backspace = function() {
-	var n = UI.getPos();
-	if (n > 0) {
-		var s = $_.value;
-		var c = s.codePointAt(n-2);
-		var m = c >= 0x10000 ? n-2 : n-1;
-		$_.value = s.slice(0, m) + s.slice(n);
-		UI.setPos(m);
-		UI.go();
-	}
-};*/
-
 // 拆漢字
 UI.decompose = function() {
 	var n = UI.getPos();
@@ -541,13 +467,13 @@ UI.go = function(force) {
 	$_.focus();
 	//if (!force && !_('onthefly').checked) return;
 	UI.hidePop(true);
-	UI.groups = null;
+	Seeker.groups = null;
+	$('#groups').html('').hide();
 	Seeker.result = null;
 	var s = UI.getSel() || $_.value;
 	s = s.replace(/\s/g, '');
-	$('#groups').text('Loading...');
+	Seeker.stopMatch();
 	if (!s) {
-		Seeker.stopMatch();
 		$('#counter').text('');
 		$('#output').text('');
 	} else {
@@ -555,15 +481,14 @@ UI.go = function(force) {
 		var variant = _('variant').checked;
 		//var l = [];
 		if (s.charAt(0) == ':') {
-			_('output').innerHTML = Seeker.getTree(s.slice(1), divide, Config.addCell);
+			$('#output').html(Seeker.getTree(s.slice(1), divide));
 		} else {
 			var ignore = null;
 			var tmp = s.split('-');
 			if (tmp.length == 2) { s = tmp[0]; ignore = tmp[1]; }
 
 			var url = 'href="'+ Config.url +'"';
-			var max = force ? Config.resultStep2 : Config.resultStep1;
-			Seeker.getMatch(s, ignore, variant, divide, max, url, Config.setResult, Config.onFinished);
+			Seeker.getMatch(s, ignore, variant, divide, force, url);
 		}
 	}
 };
@@ -575,39 +500,14 @@ UI.setMode = function(chk, key) {
 };
 
 // 鍵盤開關改變
-//UI.padType = null;
-UI.updatePad = function(init) {
-	if (UI.padType === null) {
-		UI.padType = UI.getCookie('keypad', UI.isMobile() ? false : 'stroke');
-	} else if (UI.padType == 'categoty') {
-		UI.padType = UI.setCookie('keypad', false);
-	} else if (UI.padType) {
-		UI.padType = UI.setCookie('keypad', 'categoty');
-	} else if (!UI.padType) {
-		UI.padType = UI.setCookie('keypad', 'stroke');
-	}
-	if (UI.padType == 'stroke') UI.initKeyboard(UI.strokeKeyboard);
-	if (UI.padType == 'categoty') UI.initKeyboard(UI.categoryKeyboard);
-	_('keypad').style.display = UI.padType ? 'block' : 'none';
-	_('filters').style.display = UI.padType ? "" : 'none';
-	UI.updateFilter(true);
-	$_.focus();
-};
-
-// 分組開關改變
-UI.updateFilter = function(init) {
-	var f = document.getElementsByName('filter');
-	if (!init) {
-		for (var i=0; i<f.length; i++) if (f[i].checked) UI.setCookie('filter', f[i].value);
-	}
-	var val = UI.getCookie('filter', 1)*1;
-	for (var i=0; i<f.length; i++) {		// IE11的getElementsByName/getElementsByClassName不支援for(var i in f)
-		//console.log(f[i].tagName);
-		if (val == f[i].value) f[i].checked = true;
-		var fv = f[i].value;
-		if (fv == '0') continue;
-		var l = document.getElementsByClassName('K'+fv);
-		for (var j in l) if (l[j].tagName == 'BUTTON') l[j].style.cssText = (val == 0 || val == fv) ? '' : 'display:none';
+UI.updatePad = function() {
+	UI.keypadMode = $('#showkeypad:checked').length > 0;
+	UI.setCookie('keypad', UI.keypadMode ? '1' : '0');
+	if (UI.keypadMode) {
+		UI.initKeyboard(UI.strokeKeyboard);
+		$('#keypad').show();
+	} else {
+		$('#keypad').hide();
 	}
 	$_.focus();
 };
@@ -618,7 +518,6 @@ UI.replaceFind = function(s) {
 };
 
 // 加入快捷按鈕
-//UI.shortcuts = [];
 UI.addShortcut = function(w, d) {
 	if (w) {
 		var ex = false;
@@ -635,8 +534,8 @@ UI.addShortcut = function(w, d) {
 		if (s) UI.shortcuts = s.split(/ /);
 	}
 	var html = '⌘ ';
-	for (var i in UI.shortcuts) html += '<button class="han">' + UI.shortcuts[i] + '</button>';
-	_('scKey').innerHTML = html;
+	for (var i in UI.shortcuts) html += UI.createTag(UI.shortcuts[i], 'button', 'han', null, true);
+	$('#scKey').html(html);
 };
 
 UI.showPop = function(e) {
@@ -644,34 +543,24 @@ UI.showPop = function(e) {
 	if (c.tagName.toUpperCase() != 'BUTTON' && c.tagName.toUpperCase() != 'A') return;
 	var change = function() {
 		var maxX = document.body.scrollWidth - 70;
-		//console.log(e);
 		//var x = e.pageX < 150 ? 10 : Math.floor(e.pageX < maxX ? e.pageX - 140 : maxX - 140);
 		var rect = c.getBoundingClientRect();
 		var x = rect.left < 150 ? 10 : Math.floor(rect.left < maxX ? rect.left - 140 : maxX - 140);
-		_('popview').style.cssText = 'display:block;left:'+ x +'px;top:'+ Math.floor(window.scrollY + rect.bottom+5) +'px';
-		//console.log(_('popview').style);
+		$('#popview').css({left: x, top: Math.floor(window.scrollY + rect.bottom-2)}).show();
 		var chr = $(c).attr('data-char') || c.innerText;
-		_('bigchar').innerText = chr;
 		var u = chr.codePointAt(0);
-		_('codetag').innerText = 'U+' + u.toString(16).toUpperCase();
 		var k = Seeker.getCJKBlock(u);
-		_('bigchar').className = Config.useImage[k] ? 'han img' : 'han';
-		_('bigchar').style.cssText = Config.useImage[k] ? 'background-image: url(' + Config.glyphwiki + 'u' + u.toString(16) + '.svg)' : '';
-		//('bigchar').innerText = c.innerText;
+		$('#codetag').text('U+' + u.toString(16).toUpperCase());
+		$('#bigchar').text(chr).attr({'class': 'han', 'style': ''});
+		if (Config.useImage[k]) $('#bigchar').addClass('img').css({'background-image': 'url(' + Config.glyphwiki + 'u' + u.toString(16) + '.svg)'});
 		UI.popTrigger = c;
-		_('menu_key').style.display = c.tagName.toUpperCase() == 'BUTTON' ? 'block' : 'none';
-		if (c.tagName.toUpperCase() == 'A') {
-			_('menu_go').style.display = c.tagName.toUpperCase() == 'A' ? 'block' : 'none';
-			_('menu_go').href = c.href;
-		} else {
-			_('menu_go').style.display = 'none';
-		}
-		_('menu_add').style.display = 'block';
-		_('menu_del').style.display = 'none';
-		if (c.parentElement && c.parentElement.id == 'scKey') {  // 因為動態呈現時，c.parentElement可能經常消失
-			_('menu_add').style.display = 'none';
-			_('menu_del').style.display = 'block';	
-		}
+		$('#menu_key').toggle(c.tagName.toUpperCase() == 'BUTTON');
+		//_('menu_key').style.display = c.tagName.toUpperCase() == 'BUTTON' ? 'block' : 'none';
+		$('#menu_go').toggle(c.tagName.toUpperCase() == 'A').attr('href', c.href);
+		if (c.tagName.toUpperCase() == 'A') $('#menu_go').attr('href', c.href);
+		var inScKey = c.parentElement && c.parentElement.id == 'scKey';  // 因為動態呈現時，c.parentElement可能經常消失
+		$('#menu_add').toggle(!inScKey);
+		$('#menu_del').toggle(inScKey);
 	};
 	UI.popTimer = setTimeout(change, UI.popTrigger == null ? 0 : 100);
 };
@@ -679,7 +568,7 @@ UI.showPop = function(e) {
 UI.hidePop = function(e) {
 	if (e !== true && e.target != UI.popTrigger) return;
 	UI.popTimer = setTimeout(function () {
-		_('popview').style.display = 'none';
+		$('#popview').hide();
 		UI.popTrigger = null;
 	}, 100);
 };
@@ -702,10 +591,16 @@ UI.eventMoniter = function() {
 		if (e.code == 'Backslash' || e.keyCode == 0x5C) UI.decompose();
 	});
 
-	$('#input').on('input', function() { UI.go(false); });
+	$_.addEventListener('compositionstart', function() { UI.ime = true; });
+	$_.addEventListener('compositionend', function() { setTimeout(function() { UI.ime = false; UI.go(); }, 1); });
+
+
+	$($_).on('input', function() { UI.go(false); });
 	$('#buttClear').click(UI.clearFind);
 	$('#buttDecompose').click(UI.decompose);
 	$('#buttGo').click(function() { UI.go(true) });
+
+	$('#showkeypad').click(UI.updatePad);
 
 	$('#popview').on('mouseenter', function(e) {
 		clearTimeout(UI.popTimer);
@@ -714,56 +609,129 @@ UI.eventMoniter = function() {
 	
 	$('#popview').on('mouseleave', function(e) {
 		e.stopPropagation();
-		//if (e.target != this) return;
 		$('#popview').hide();
 		UI.popTrigger = null;
 	});
-
-	// _('popview').addEventListener('mouseenter', function(e) {
-	// 	clearTimeout(UI.popTimer);
-	// 	e.stopPropagation();
-	// }, false);
 	
-	// _('popview').addEventListener('mouseleave', function(e) {
-	// 	e.stopPropagation();
-	// 	if (e.target != this) return;
-	// 	_('popview').style.display = 'none';
-	// 	UI.popTrigger = null;
-	// }, false);
-	
-	_('keypad').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
-	_('keypad').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
-	_('scKey').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
-	_('scKey').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
-	_('output').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
-	_('output').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
-	_('groups').addEventListener('mouseover', function(e) { UI.showPop(e); }, false);
-	_('groups').addEventListener('mouseout', function(e) { UI.hidePop(e); }, false);
+	// mouse in/out
+	$('#keypad').on('mouseover', 'button', UI.showPop).on('mouseout', 'button', UI.hidePop);
+	$('#scKey').on('mouseover', 'button', UI.showPop).on('mouseout', 'button', UI.hidePop);
+	$('#groups').on('mouseover', 'a', UI.showPop).on('mouseout', 'a', UI.hidePop);
+	$('#output').on('mouseover', 'a', UI.showPop).on('mouseout', 'a', UI.hidePop);
+	//_('output').addEventListener('click', function(e) { if (e.target.tagName == 'A') e.preventDefault() }, false);
 
-	_('output').addEventListener('click', function(e) { if (e.target.tagName == 'A') e.preventDefault() }, false);
+	// click events
+	$('#scKey, #keypad').on('click', 'button', function(e) { UI.key(e.target.innerText); e.preventDefault(); });
+	$('#groups').on('click', 'a.grp', function() { $(this).toggleClass('on'); UI.showOutput(); });
+	$('#output').on('click', 'a', function(e) { e.preventDefault() } );
 
-	$('#groups').on('click', 'a.grp', function() { $(this).toggleClass('on'); Config.showResult(); });
+	$('#output').on('mouseover', '> span .line', function(e) { $(this).attr('class', 'line hover'); e.stopPropagation(); });
+	$('#output').on('mouseout', '> span .line', function(e) { $(this).attr('class', 'line'); });
 
-	_('scKey').addEventListener('click', function(e) {
-		if (e.target.tagName.toUpperCase() == 'BUTTON') UI.key(e.target.innerText);
-		e.preventDefault();
-	}, false);
+	$('#menu_go').click(function(e) { UI.popTrigger.click() });
+	$('#menu_key').click(function(e) { UI.key($(UI.popTrigger).data('char')) });
+	$('#menu_copy').click(function(e) { UI.setClipboard($(UI.popTrigger).data('char')) });
+	$('#menu_query').click(function(e) { UI.replaceFind($(UI.popTrigger).data('char')) });
+	$('#menu_skip').click(function(e) { UI.setSkipChar($(UI.popTrigger).data('char')) });
+	$('#menu_add').click(function(e) { UI.addShortcut($(UI.popTrigger).data('char')) });
+	$('#menu_del').click(function(e) { UI.addShortcut($(UI.popTrigger).data('char'), true) });
+};
 
-	_('keypad').addEventListener('click', function(e) {
-		if (e.target.tagName.toUpperCase() == 'BUTTON') UI.key(e.target.innerText);
-		e.preventDefault();
-	}, false);
+// 產生漢字按鈕
+UI.createTag = function(c, tag, cls, extra, hideChar, running) {
+	var code = c.codePointAt(0);
+	var tagBody = Config.useImage[Seeker.getCJKBlock(code)] && !running ?
+		' img" data-char="' + c + '" style="background-image: url(' + Config.glyphwiki + 'u' + code.toString(16) + '.svg)">' + (hideChar ? '&nbsp;' : c) :
+		'" data-char="' + c + '">' + c;
+	return '<' + tag + ' ' + (extra || '') + ' class="' + (cls || '') + tagBody + '</' + tag + '>';
+};
 
-	_('menu_go').addEventListener('click', function(e) { UI.popTrigger.click(); }, false);
-	_('menu_key').addEventListener('click', function(e) { UI.key(UI.popTrigger.innerText); }, false);
-	_('menu_copy').addEventListener('click', function(e) { UI.setClipboard(UI.popTrigger.innerText); }, false);
-	_('menu_query').addEventListener('click', function(e) { UI.replaceFind(UI.popTrigger.innerText); }, false);
-	$('#menu_skip').click(function(e) { UI.setSkipChar(UI.popTrigger.innerText); });
-	_('menu_add').addEventListener('click', function(e) { UI.addShortcut(UI.popTrigger.innerText); }, false);
-	_('menu_del').addEventListener('click', function(e) { UI.addShortcut(UI.popTrigger.innerText, true); }, false);
+// 產生Output框內的搜尋結果文字
+UI.addCell = function(entry, running) {
+	var block = Seeker.getCJKBlock(entry.unicode);
+	var cls = (UI.blockClasses[block] || 'OTH');
 
-	$_.addEventListener('compositionstart', function() { UI.ime = true; });
-	$_.addEventListener('compositionend', function() { setTimeout(function() { UI.ime = false; UI.go(); }, 1); });
+	var url = Config.url;
+	url = url.replace("$CHR$", entry.char);
+	url = url.replace("$ENC$", encodeURI(entry.char));
+	url = url.replace("$UCD$", entry.unicode.toString());
+	url = url.replace("$UCh$", entry.unicode.toString(16));
+	url = url.replace("$UCH$", entry.unicode.toString(16).toUpperCase());
+
+	if (entry.text) {
+		return '<span class="'+ cls +'">' + entry.text + '</span>';
+	} else {
+		return UI.createTag(entry.char, 'a', cls, 'target="_blank" href="'+ url +'"', false, running);
+	}
+};
+
+// 顯示查詢結果
+UI.setResult = function(founds, i, force) {
+	Seeker.result = founds;
+	var msg = force ? '' : '<span style="color:red">(基本)</span> ';
+	msg += Seeker.groups ? '總共找到 ' + founds.length + ' 字' : '目前找到 ' + founds.length + ' 字... ' + Math.floor(i*100 / dt.length) + '%';
+	$('#counter').html(msg);
+	UI.showOutput();
+};
+
+// 顯示查詢結果 (Output部分)
+UI.showOutput = function() {
+	var s = '', first = true, gstr, blk, lastBlock;
+	for (var j in Seeker.result) Seeker.result[j].gflag = false;
+
+	var glist = $('#groups a.on');
+	$(glist.get().reverse()).each( function(i, gx) {
+		var g = $(gx).data('char');
+		gstr = UI.createTag(g, 'h3', '', '', false);
+		for (var j in Seeker.result) {
+			if (Seeker.result[j].gflag) continue;
+			for (var gi in Seeker.result[j].groups) {
+				if (Seeker.result[j].groups[gi] == g) {
+					gstr += UI.addCell(Seeker.result[j], Seeker.groups == null);
+					Seeker.result[j].gflag = true;
+					break;
+				}
+			}
+		}
+		s = gstr + '<br>\n' + s;
+	});
+
+	for (var j in Seeker.result) {
+		if (Seeker.result[j].gflag) continue;
+		blk = Seeker.getCJKBlock(Seeker.result[j].unicode);
+		if (blk != lastBlock && !first) s += '<br>';
+		lastBlock = blk;
+
+		s += UI.addCell(Seeker.result[j], Seeker.groups == null);
+		first = false;
+	}
+	$('#output').html(s);
+};
+
+UI.onFinished = function(founds) {
+	Seeker.result = founds;
+	var groups = {};
+	for (var j in founds) {
+		if (founds[j].groups) {
+			//if (!founds[j].groups.length) continue;
+			for (var gi in founds[j].groups) {
+				var g = founds[j].groups[gi];
+				if (!groups[g]) groups[g] = 0;
+				groups[g]++;
+			}
+		}
+	}
+	Seeker.groups = [];
+	for (var g in groups) if (groups[g] >= 3) Seeker.groups.push({'char': g, 'unicode': g.codePointAt(0), 'count': groups[g]});
+	Seeker.groups.sort(function(a, b) { return b.count - a.count; });
+	UI.showOutput();
+
+	var str = '', g, blk;
+	for (var i in Seeker.groups) {
+		g = Seeker.groups[i];
+		str += UI.createTag(g.char, 'a', 'grp', 'href="javascript:void(0)" data-count="' + g.count + '"', true);
+	}
+	if (str != '') $('#groups').html(str).slideDown();
 };
 
 // 初始化
@@ -778,14 +746,12 @@ UI.init = function() {
 	// Status
 	$('#variant').prop('checked', UI.getCookie('variant', '1') == '1');
 	$('#subdivide').prop('checked', UI.getCookie('subdivide', '0') == '1');
+	$('#showkeypad').prop('checked', UI.getCookie('keypad', '0') == '1');
 	UI.addShortcut();
 
 	// Events
 	UI.eventMoniter();
-
-	//OnFnt();
-	UI.updatePad(true);
-	UI.updateFilter(true);
+	UI.updatePad();
 };
 
 window.onload = UI.init;
